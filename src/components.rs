@@ -5,6 +5,7 @@ use bevy::window::PrimaryWindow;
 
 const BAT_DIMENSIONS: (u32, u32) = (24, 96);
 const BALL_SPEED: f32 = 400.0;
+const BAT_SPEED: f32 = 400.0;
 
 #[derive(Component)]
 pub struct Ball {
@@ -34,9 +35,9 @@ impl Ball {
     }
 
     pub fn movement(
+        time: Res<Time>,
         mut ball_query: Query<(&mut Transform, &mut Ball)>,
         window_query: Query<&Window, With<PrimaryWindow>>,
-        time: Res<Time>,
     ) {
         let window = window_query
             .get_single()
@@ -58,8 +59,8 @@ impl Ball {
 
 #[derive(Component)]
 pub struct Bat {
-    up_key: char,
-    down_key: char,
+    up_key: KeyCode,
+    down_key: KeyCode,
 }
 
 impl Bat {
@@ -84,8 +85,8 @@ impl Bat {
                 ..default()
             },
             Bat {
-                up_key: 'e',
-                down_key: 'n',
+                up_key: KeyCode::E,
+                down_key: KeyCode::N,
             },
         ));
 
@@ -97,9 +98,36 @@ impl Bat {
                 ..default()
             },
             Bat {
-                up_key: 'f',
-                down_key: 's',
+                up_key: KeyCode::F,
+                down_key: KeyCode::S,
             },
         ));
+    }
+
+    pub fn player_movement(
+        input: Res<Input<KeyCode>>,
+        time: Res<Time>,
+        mut players_query: Query<(&Bat, &mut Transform)>,
+        window_query: Query<&Window, With<PrimaryWindow>>,
+    ) {
+        let window = window_query
+            .get_single()
+            .expect("There should only be one PrimaryWindow entity.");
+
+        for (player, mut transform) in players_query.iter_mut() {
+            if input.pressed(player.up_key) {
+                transform.translation.y += BAT_SPEED * time.delta_seconds();
+            }
+            if input.pressed(player.down_key) {
+                transform.translation.y += -1.0 * BAT_SPEED * time.delta_seconds();
+            }
+            transform.translation.y = f32::max(
+                BAT_DIMENSIONS.1 as f32 / 2.0,
+                f32::min(
+                    window.height() - (BAT_DIMENSIONS.1 as f32 / 2.0),
+                    transform.translation.y,
+                ),
+            );
+        }
     }
 }

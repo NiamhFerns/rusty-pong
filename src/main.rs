@@ -8,8 +8,9 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_startup_system(spawn_camera)
         .add_startup_system(components::Ball::spawn)
-        // .add_startup_system(components::Bat::spawn_players)
+        .add_startup_system(components::Bat::spawn_players)
         .add_system(components::Ball::movement)
+        .add_system(components::Bat::player_movement)
         .run()
 }
 
